@@ -53,9 +53,10 @@
     max: 18
   };
   const DEFAULT_BOUNDS = [
-    [35.2748, 139.6238],
-    [35.3238, 139.6754]
+    [35.668, 139.740],
+    [35.702, 139.768]
   ];
+  const DEFAULT_VIEW = { center: [35.685, 139.7527], zoom: 14 };
   const LAYER_CATALOG = window.MikasaLayerCatalog;
   const EXPORT_TOOLS = window.MikasaExport;
   const DEFAULT_LAYER_KEYS = LAYER_CATALOG.defaultLayerKeys;
@@ -280,32 +281,25 @@
     newMap.setView(latlng, Math.max(newMap.getZoom(), 15), { animate: true });
   }
 
-  function addCurrentLocationControl(map) {
-    const Control = L.Control.extend({
-      options: { position: 'topright' },
-      onAdd: function () {
-        const btn = L.DomUtil.create('button', 'locate-btn');
-        btn.type = 'button';
-        btn.textContent = '現在地にピン';
-        L.DomEvent.disableClickPropagation(btn);
-        btn.addEventListener('click', function () {
-          if (!navigator.geolocation) {
-            alert('このブラウザでは位置情報APIが利用できません。');
-            return;
-          }
-          navigator.geolocation.getCurrentPosition(function (pos) {
-            addCurrentLocationPin({ lat: pos.coords.latitude, lng: pos.coords.longitude });
-          }, function (err) {
-            alert('現在地を取得できませんでした: ' + err.message);
-          }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
-        });
-        return btn;
+  (function setupLocateButton() {
+    const btn = document.getElementById('btn-locate');
+    if (!btn) return;
+    btn.addEventListener('click', function () {
+      if (!window.isSecureContext) {
+        alert('位置情報APIは、HTTPSまたはlocalhostなどのセキュアな接続環境でのみ利用可能です。現在の接続環境（file:// など）では制限されています。');
+        return;
       }
+      if (!navigator.geolocation) {
+        alert('このブラウザでは位置情報APIが利用できません。');
+        return;
+      }
+      navigator.geolocation.getCurrentPosition(function (pos) {
+        addCurrentLocationPin({ lat: pos.coords.latitude, lng: pos.coords.longitude });
+      }, function (err) {
+        alert('現在地を取得できませんでした: ' + err.message);
+      }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
     });
-    map.addControl(new Control());
-  }
-
-  addCurrentLocationControl(oldMap);
+  })();
 
   const fixedPoints = { old: [], new: [] };
 
@@ -315,7 +309,12 @@
     newMap.fitBounds(bounds, { padding: [18, 18], maxZoom: 16 });
   }
 
-  fitMapsToBounds(DEFAULT_BOUNDS);
+  function setDefaultView() {
+    oldMap.setView(DEFAULT_VIEW.center, DEFAULT_VIEW.zoom, { animate: false });
+    newMap.setView(DEFAULT_VIEW.center, DEFAULT_VIEW.zoom, { animate: false });
+  }
+
+  setDefaultView();
 
   function drawFromData(data) {
     if (Array.isArray(data.bounds) && data.bounds.length === 2) {
@@ -347,33 +346,83 @@
     }
   }
 
-  function fetchMapData() {
-    const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
-    const candidates = [
-      `${basePath}map-data.json`,
-      './map-data.json',
-      'map-data.json'
-    ];
+  const DEFAULT_MAP_DATA_FALLBACK = {
+    bounds: [
+      [35.2748, 139.6238],
+      [35.3238, 139.6754]
+    ],
+    points: [
+      {
+        lat: 35.2846,
+        lng: 139.6538,
+        label: "JR横須賀駅",
+        color: "#f7b267",
+        radius: 6,
+        class: "label-slate",
+        anchor: [0, 16]
+      },
+      {
+        lat: 35.283136,
+        lng: 139.657118,
+        label: "トンネルを抜けて海が見える",
+        color: "#f7b267",
+        radius: 6,
+        class: "label-slate",
+        anchor: [0, 16]
+      },
+      {
+        lat: 35.27588,
+        lng: 139.6374,
+        label: "横須賀IC（新ルート起点）",
+        color: "#0ea5c6",
+        radius: 7,
+        class: "label-slate",
+        anchor: [0, 16]
+      },
+      {
+        lat: 35.282902,
+        lng: 139.668631,
+        label: "三笠公園入口 左折",
+        color: "#0ea5c6",
+        radius: 6,
+        class: "label-slate",
+        anchor: [0, 16]
+      },
+      {
+        lat: 35.283484,
+        lng: 139.668610,
+        label: "直進しないで右に道なりに",
+        color: "#0ea5c6",
+        radius: 6,
+        class: "label-slate",
+        anchor: [0, 16]
+      },
+      {
+        lat: 35.285330,
+        lng: 139.674050,
+        label: "三笠公園",
+        color: "#ff8f83",
+        radius: 8,
+        class: "label-red",
+        anchor: [0, 16]
+      }
+    ]
+  };
 
-    return candidates.reduce((promise, url) => promise.catch(() => {
-      return fetch(url, { cache: 'no-cache' }).then((r) => {
-        if (!r.ok) {
-          throw new Error(`map-data.json returned ${r.status} from ${url}`);
-        }
-        return r.json();
+  // Clear all currently displayed fixed (preset) points from both maps
+  function clearFixedPoints() {
+    ['old', 'new'].forEach((key) => {
+      fixedPoints[key].forEach((p) => {
+        if (p.circle) p.circle.remove();
+        if (p.label) p.label.remove();
       });
-    }), Promise.reject(new Error('map-data.json not loaded')));
-  }
-
-  fetchMapData()
-    .then(drawFromData)
-    .catch((err) => {
-      console.error('map-data.json の読み込みに失敗しました。', err);
+      fixedPoints[key] = [];
     });
+  }
 
   let syncing = false;
   function sync(source, target) {
-    source.on('moveend zoomend', function () {
+    source.on('move zoom', function () {
       if (syncing) return;
       syncing = true;
       const targetKey = target === oldMap ? 'old' : 'new';
@@ -389,6 +438,319 @@
   window.addEventListener('load', refreshMaps);
   window.addEventListener('resize', refreshMaps);
   setTimeout(refreshMaps, 120);
+
+  // ── KML Parser ────────────────────────────────────────────────────────────
+  function parseKml(xmlText) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(xmlText, 'application/xml');
+    const parseError = doc.querySelector('parsererror');
+    if (parseError) {
+      throw new Error('KMLのXMLパースに失敗しました: ' + parseError.textContent.slice(0, 120));
+    }
+
+    const points = [];
+    const defaultColors = ['#0ea5c6', '#f7b267', '#ff8f83', '#22c55e', '#a78bfa'];
+    let colorIdx = 0;
+
+    const placemarks = Array.from(doc.querySelectorAll('Placemark'));
+    placemarks.forEach((pm) => {
+      const coordsEl = pm.querySelector('Point > coordinates');
+      if (!coordsEl) return;
+
+      const raw = coordsEl.textContent.trim();
+      const parts = raw.split(',');
+      if (parts.length < 2) return;
+
+      const lng = parseFloat(parts[0]);
+      const lat = parseFloat(parts[1]);
+      if (isNaN(lat) || isNaN(lng)) return;
+
+      const nameEl = pm.querySelector('name');
+      const label = nameEl ? nameEl.textContent.trim() : 'KML地点';
+
+      // StyleのIconStyle colorからピン色を推測 (KML color: aabbggrr)
+      let color = defaultColors[colorIdx % defaultColors.length];
+      const iconColorEl = pm.querySelector('Style > IconStyle > color') ||
+                          pm.querySelector('IconStyle > color');
+      if (iconColorEl) {
+        const kmlColor = iconColorEl.textContent.trim();
+        if (/^[0-9a-fA-F]{8}$/.test(kmlColor)) {
+          const rr = kmlColor.slice(6, 8);
+          const gg = kmlColor.slice(4, 6);
+          const bb = kmlColor.slice(2, 4);
+          color = `#${rr}${gg}${bb}`;
+        }
+      }
+      colorIdx++;
+
+      points.push({
+        lat,
+        lng,
+        label,
+        color,
+        radius: 6,
+        class: 'label-slate',
+        anchor: [0, 16]
+      });
+    });
+
+    let bounds = null;
+    if (points.length > 0) {
+      const lats = points.map((p) => p.lat);
+      const lngs = points.map((p) => p.lng);
+      const padding = 0.005;
+      bounds = [
+        [Math.min(...lats) - padding, Math.min(...lngs) - padding],
+        [Math.max(...lats) + padding, Math.max(...lngs) + padding]
+      ];
+    }
+
+    return { points, bounds };
+  }
+  // ──────────────────────────────────────────────────────────────────────────
+
+  // ── Preset Loader ──────────────────────────────────────────────────────────
+  (function setupPresetLoader() {
+    const selectEl = document.getElementById('preset-select');
+    const loadBtn = document.getElementById('btn-load-preset');
+    const statusEl = document.getElementById('preset-status');
+    if (!selectEl || !loadBtn) return;
+
+    function setStatus(message, isError) {
+      if (!statusEl) return;
+      statusEl.textContent = message;
+      statusEl.className = 'preset-status' + (isError ? ' preset-status-error' : ' preset-status-ok');
+    }
+
+    function clearStatus() {
+      if (!statusEl) return;
+      statusEl.textContent = '';
+      statusEl.className = 'preset-status';
+    }
+
+    function fetchJson(url) {
+      return fetch(url, { cache: 'no-cache' }).then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status} from ${url}`);
+        return r.json();
+      });
+    }
+
+    function fetchKml(url) {
+      return fetch(url, { cache: 'no-cache' }).then((r) => {
+        if (!r.ok) throw new Error(`HTTP ${r.status} from ${url}`);
+        return r.text();
+      }).then((text) => parseKml(text));
+    }
+
+    // Load preset index from preset/index.json
+    const basePath = window.location.pathname.substring(0, window.location.pathname.lastIndexOf('/') + 1);
+    const indexUrl = `${basePath}preset/index.json`;
+
+    fetchJson(indexUrl)
+      .then((presets) => {
+        selectEl.innerHTML = '';
+        if (!Array.isArray(presets) || presets.length === 0) {
+          const opt = document.createElement('option');
+          opt.value = '';
+          opt.textContent = 'プリセットがありません';
+          selectEl.appendChild(opt);
+          return;
+        }
+
+        const placeholder = document.createElement('option');
+        placeholder.value = '';
+        placeholder.textContent = 'プリセットを選択...';
+        selectEl.appendChild(placeholder);
+
+        presets.forEach((preset) => {
+          const opt = document.createElement('option');
+          opt.value = preset.file || '';
+          opt.textContent = preset.title || preset.id || preset.file;
+          selectEl.appendChild(opt);
+        });
+
+        loadBtn.disabled = false;
+      })
+      .catch((err) => {
+        console.warn('preset/index.json の読み込みに失敗しました。', err);
+        selectEl.innerHTML = '<option value="">プリセットを利用できません</option>';
+        setStatus('プリセット一覧の読み込みに失敗しました（HTTPサーバー経由で起動してください）。', true);
+      });
+
+    selectEl.addEventListener('change', () => {
+      clearStatus();
+    });
+
+    loadBtn.addEventListener('click', () => {
+      const selectedFile = selectEl.value;
+      if (!selectedFile) {
+        setStatus('プリセットを選択してください。', true);
+        return;
+      }
+
+      loadBtn.disabled = true;
+      loadBtn.textContent = '読み込み中...';
+      clearStatus();
+
+      const presetUrl = `${basePath}${selectedFile}`;
+      const isKml = selectedFile.toLowerCase().endsWith('.kml');
+      const loader = isKml ? fetchKml(presetUrl) : fetchJson(presetUrl);
+
+      loader
+        .then((data) => {
+          clearFixedPoints();
+          drawFromData(data);
+          const selectedOption = selectEl.options[selectEl.selectedIndex];
+          setStatus(`「${selectedOption.textContent}」を読み込みました。`, false);
+        })
+        .catch((err) => {
+          console.error('プリセットの読み込みに失敗しました。', err);
+          setStatus('プリセットの読み込みに失敗しました。', true);
+        })
+        .finally(() => {
+          loadBtn.disabled = false;
+          loadBtn.textContent = '読み込む';
+        });
+    });
+  })();
+  // ──────────────────────────────────────────────────────────────────────────
+
+
+  // ── KML Parser & Local File Loader ────────────────────────────────────────
+  function parseKml(xmlText) {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(xmlText, 'application/xml');
+    const parseError = doc.querySelector('parsererror');
+    if (parseError) {
+      throw new Error('KMLのXMLパースに失敗しました: ' + parseError.textContent.slice(0, 120));
+    }
+
+    // boundsは後で計算
+    const points = [];
+    const defaultColors = ['#0ea5c6', '#f7b267', '#ff8f83', '#22c55e', '#a78bfa'];
+    let colorIdx = 0;
+
+    const placemarks = Array.from(doc.querySelectorAll('Placemark'));
+    placemarks.forEach((pm) => {
+      const coordsEl = pm.querySelector('Point > coordinates');
+      if (!coordsEl) return;
+
+      const raw = coordsEl.textContent.trim();
+      const parts = raw.split(',');
+      if (parts.length < 2) return;
+
+      const lng = parseFloat(parts[0]);
+      const lat = parseFloat(parts[1]);
+      if (isNaN(lat) || isNaN(lng)) return;
+
+      const nameEl = pm.querySelector('name');
+      const label = nameEl ? nameEl.textContent.trim() : 'KML地点';
+
+      // StyleのIconStyle colorからピン色を推測
+      let color = defaultColors[colorIdx % defaultColors.length];
+      const iconColorEl = pm.querySelector('Style > IconStyle > color') ||
+                          pm.querySelector('IconStyle > color');
+      if (iconColorEl) {
+        const kmlColor = iconColorEl.textContent.trim();
+        // KML color is aabbggrr
+        if (/^[0-9a-fA-F]{8}$/.test(kmlColor)) {
+          const rr = kmlColor.slice(6, 8);
+          const gg = kmlColor.slice(4, 6);
+          const bb = kmlColor.slice(2, 4);
+          color = `#${rr}${gg}${bb}`;
+        }
+      }
+      colorIdx++;
+
+      points.push({
+        lat,
+        lng,
+        label,
+        color,
+        radius: 6,
+        class: 'label-slate',
+        anchor: [0, 16]
+      });
+    });
+
+    // KMLのDocument/Folder名をタイトルとして取得
+    let bounds = null;
+    if (points.length > 0) {
+      const lats = points.map((p) => p.lat);
+      const lngs = points.map((p) => p.lng);
+      const padding = 0.005;
+      bounds = [
+        [Math.min(...lats) - padding, Math.min(...lngs) - padding],
+        [Math.max(...lats) + padding, Math.max(...lngs) + padding]
+      ];
+    }
+
+    return { points, bounds };
+  }
+
+  (function setupKmlFileLoader() {
+    const fileInput = document.getElementById('kml-file-input');
+    const fileNameLabel = document.getElementById('kml-file-name');
+    const loadBtn = document.getElementById('btn-load-kml');
+    const statusEl = document.getElementById('kml-upload-status');
+    if (!fileInput || !loadBtn) return;
+
+    function setStatus(message, isError) {
+      if (!statusEl) return;
+      statusEl.textContent = message;
+      statusEl.className = 'preset-status' + (isError ? ' preset-status-error' : ' preset-status-ok');
+    }
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files[0];
+      if (file) {
+        fileNameLabel.textContent = file.name;
+        loadBtn.disabled = false;
+        setStatus('', false);
+      } else {
+        fileNameLabel.textContent = 'ファイル未選択';
+        loadBtn.disabled = true;
+      }
+    });
+
+    loadBtn.addEventListener('click', () => {
+      const file = fileInput.files[0];
+      if (!file) {
+        setStatus('KMLファイルを選択してください。', true);
+        return;
+      }
+
+      loadBtn.disabled = true;
+      loadBtn.textContent = '読み込み中...';
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const data = parseKml(e.target.result);
+          if (data.points.length === 0) {
+            setStatus('KMLにPoint地点が見つかりませんでした。Placemark > Point 要素を含むKMLファイルを選択してください。', true);
+          } else {
+            clearFixedPoints();
+            drawFromData(data);
+            setStatus(`「${file.name}」から ${data.points.length} 件の地点を読み込みました。`, false);
+          }
+        } catch (err) {
+          console.error('KMLの読み込みに失敗しました。', err);
+          setStatus('KMLの読み込みに失敗しました: ' + err.message, true);
+        } finally {
+          loadBtn.disabled = false;
+          loadBtn.textContent = '読み込む';
+        }
+      };
+      reader.onerror = () => {
+        setStatus('ファイルの読み込みに失敗しました。', true);
+        loadBtn.disabled = false;
+        loadBtn.textContent = '読み込む';
+      };
+      reader.readAsText(file, 'UTF-8');
+    });
+  })();
+  // ──────────────────────────────────────────────────────────────────────────
 
   // Coordinate Display Controls
   const CoordsControl = L.Control.extend({
@@ -447,20 +809,6 @@
   // Click-to-Add Custom Point Creator
   const customPoints = [];
 
-  function updateJsonOutput() {
-    const el = document.getElementById('json-output');
-    if (!el) return;
-    const cleanList = customPoints.map(p => ({
-      lat: p.lat,
-      lng: p.lng,
-      label: p.label,
-      color: p.color,
-      radius: p.radius,
-      class: p.class,
-      anchor: p.anchor
-    }));
-    el.value = JSON.stringify(cleanList, null, 2);
-  }
 
   function updateKmlOutput() {
     const el = document.getElementById('kml-output');
@@ -543,7 +891,6 @@
       customPoints.splice(idx, 1);
     }
 
-    updateJsonOutput();
     updateKmlOutput();
   }
 
@@ -596,49 +943,55 @@
       .setContent(popupContent)
       .openOn(e.target);
     setTimeout(() => setCoordsDisplay(e.latlng), 0);
+  }
 
-    // Bind confirm click after popup renders in DOM
-    setTimeout(() => {
-      const btn = document.getElementById('add-pin-confirm');
-      const colorPicker = document.getElementById('pin-color');
-      const colorText = document.getElementById('pin-color-text');
-      const classSelect = document.getElementById('pin-class');
+  // Bind popup events on maps to configure the custom point creation interface dynamically when a popup opens
+  function setupPopupListeners(map) {
+    map.on('popupopen', (e) => {
+      const container = e.popup.getElement();
+      if (!container) return;
 
-      if (!btn || !colorPicker || !colorText || !classSelect) return;
+      const btn = container.querySelector('#add-pin-confirm');
+      if (!btn) return;
 
-      // Sync text input when color picker swatch changes
-      colorPicker.oninput = () => {
-        colorText.value = colorPicker.value.toUpperCase();
-      };
+      const colorPicker = container.querySelector('#pin-color');
+      const colorText = container.querySelector('#pin-color-text');
+      const classSelect = container.querySelector('#pin-class');
+      const labelInput = container.querySelector('#pin-label');
+      const radiusInput = container.querySelector('#pin-radius');
 
-      // Sync color picker swatch when text input changes
-      colorText.oninput = () => {
-        let val = colorText.value.trim();
-        if (val && !val.startsWith('#')) {
-          val = '#' + val;
-        }
-        if (/^#[0-9A-Fa-f]{6}$/.test(val) || /^#[0-9A-Fa-f]{3}$/.test(val)) {
-          colorPicker.value = val;
-        }
-      };
+      if (colorPicker && colorText) {
+        colorPicker.oninput = () => {
+          colorText.value = colorPicker.value.toUpperCase();
+        };
+
+        colorText.oninput = () => {
+          let val = colorText.value.trim();
+          if (val && !val.startsWith('#')) {
+            val = '#' + val;
+          }
+          if (/^#[0-9A-Fa-f]{6}$/.test(val) || /^#[0-9A-Fa-f]{3}$/.test(val)) {
+            colorPicker.value = val;
+          }
+        };
+      }
 
       btn.onclick = () => {
-        const labelInput = document.getElementById('pin-label');
-        const radiusInput = document.getElementById('pin-radius');
-        if (!labelInput || !radiusInput) return;
+        const latlng = e.popup.getLatLng();
+        const latFixed = latlng.lat.toFixed(6);
+        const lngFixed = latlng.lng.toFixed(6);
 
-        const label = labelInput.value.trim() || 'カスタム地点';
-        let color = colorText.value.trim().toUpperCase();
+        const label = (labelInput && labelInput.value.trim()) || 'カスタム地点';
+        let color = colorText ? colorText.value.trim().toUpperCase() : '#0EA5C6';
         if (color && !color.startsWith('#')) {
           color = '#' + color;
         }
-        // Fallback to picker value if input is invalid hex format
         if (!/^#[0-9A-Fa-f]{6}$/.test(color) && !/^#[0-9A-Fa-f]{3}$/.test(color)) {
-          color = colorPicker.value;
+          color = (colorPicker && colorPicker.value) || '#0EA5C6';
         }
 
-        const radius = parseInt(radiusInput.value, 10) || 6;
-        const cls = classSelect.value;
+        const radius = (radiusInput && parseInt(radiusInput.value, 10)) || 6;
+        const cls = (classSelect && classSelect.value) || 'label-slate';
         const anchor = [0, 16];
 
         const now = new Date();
@@ -666,16 +1019,17 @@
         bindDeletePopup(newPoint);
 
         customPoints.push(newPoint);
-        updateJsonOutput();
         updateKmlOutput();
 
-        e.target.closePopup();
+        map.closePopup();
       };
-    }, 50);
+    });
   }
 
   oldMap.on('click', onMapClick);
   newMap.on('click', onMapClick);
+  setupPopupListeners(oldMap);
+  setupPopupListeners(newMap);
 
   // Toggle fixed points visibility - per map
   function setupPointToggle(toggleId, mapKey, map) {
@@ -706,7 +1060,5 @@
   setupPointToggle('toggle-fixed-points-old', 'old', oldMap);
   setupPointToggle('toggle-fixed-points-new', 'new', newMap);
 
-  EXPORT_TOOLS.setupExportTabs();
-  EXPORT_TOOLS.setupDownloadButton('btn-download-json', 'json-output', 'custom-points.json', 'application/json;charset=utf-8');
   EXPORT_TOOLS.setupDownloadButton('btn-download-kml', 'kml-output', 'custom-points.kml', 'application/vnd.google-earth.kml+xml;charset=utf-8');
 })();
