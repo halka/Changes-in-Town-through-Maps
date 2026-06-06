@@ -144,8 +144,16 @@
   newMap.createPane('labelPane');
   newMap.getPane('labelPane').style.zIndex = '650';
 
+  const TILE_ERROR_URL = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" width="256" height="256">'
+    + '<rect width="256" height="256" fill="#e8eff0"/>'
+    + '<text x="128" y="122" text-anchor="middle" font-size="28" fill="#b0c4c8" font-family="sans-serif">🗺</text>'
+    + '<text x="128" y="148" text-anchor="middle" font-size="11" fill="#a0b4b8" font-family="sans-serif">未収録エリア</text>'
+    + '</svg>'
+  );
+
   function tileLayer(url, attribution, options) {
-    return L.tileLayer(url, Object.assign({ attribution, maxZoom: 18 }, options || {}));
+    return L.tileLayer(url, Object.assign({ attribution, maxZoom: 18, errorTileUrl: TILE_ERROR_URL }, options || {}));
   }
 
   function addPoint(map, latlng, color, radius) {
@@ -411,12 +419,14 @@
     descEl.textContent  = message || '';
     okBtn.textContent   = confirmLabel || 'OK';
 
+    overlay.removeAttribute('inert');
     overlay.setAttribute('aria-hidden', 'false');
     overlay.classList.add('open');
     setTimeout(() => cancelBtn.focus(), 50);
 
     function close() {
       overlay.setAttribute('aria-hidden', 'true');
+      overlay.setAttribute('inert', '');
       overlay.classList.remove('open');
       cleanup();
     }
@@ -543,7 +553,17 @@
   function refreshMaps() { oldMap.invalidateSize(); newMap.invalidateSize(); }
   window.addEventListener('load', refreshMaps);
   window.addEventListener('resize', refreshMaps);
-  setTimeout(refreshMaps, 120);
+  // Use ResizeObserver instead of a fixed setTimeout: invalidate only when
+  // the map containers actually get their final dimensions.
+  if (window.ResizeObserver) {
+    const mapObserver = new ResizeObserver(refreshMaps);
+    const oldEl = document.getElementById(MAP_CONFIG.old.id);
+    const newEl = document.getElementById(MAP_CONFIG.current.id);
+    if (oldEl) mapObserver.observe(oldEl);
+    if (newEl) mapObserver.observe(newEl);
+  } else {
+    requestAnimationFrame(() => requestAnimationFrame(refreshMaps));
+  }
 
   // ── Preset Loader ──────────────────────────────────────────────────────────
   (function setupPresetLoader() {
@@ -945,6 +965,7 @@
       labelInput.value = '';
     }
     if (overlay) {
+      overlay.removeAttribute('inert');
       overlay.setAttribute('aria-hidden', 'false');
       overlay.classList.add('open');
       setTimeout(() => labelInput && labelInput.focus(), 50);
@@ -955,6 +976,7 @@
     const overlay = document.getElementById('pin-modal-overlay');
     if (overlay) {
       overlay.setAttribute('aria-hidden', 'true');
+      overlay.setAttribute('inert', '');
       overlay.classList.remove('open');
     }
     pendingPinLatLng = null;
