@@ -7,6 +7,7 @@
   <title>地図で見る街の変化</title>
   <meta name="description" content="地図を見比べて過去と現在を見比べ、街の移り変わりを読み解くページです。" />
   <link rel="canonical" href="https://spacetimap.halka.jp/" />
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
   <meta property="og:site_name" content="spacetimap.halka.jp" />
   <meta property="og:type" content="article" />
   <meta property="og:locale" content="ja_JP" />
@@ -22,6 +23,15 @@
   <meta name="twitter:description" content="地図を見比べて過去と現在を見比べ、街の移り変わりを読み解くページです。" />
   <meta name="twitter:image" content="https://spacetimap.halka.jp/ogp.jpg" />
   <meta name="twitter:image:alt" content="横須賀市観光案内所" />
+  <!-- Resource hints -->
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="dns-prefetch" href="https://maps.gsi.go.jp">
+  <link rel="dns-prefetch" href="https://tile.openstreetmap.org">
+  <link rel="dns-prefetch" href="https://basemaps.cartocdn.com">
+  <link rel="dns-prefetch" href="https://tile.opentopomap.org">
+  <!-- Preload Leaflet CSS so the browser fetches it before the parser reaches the stylesheet link -->
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" as="style">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
     onerror="this.onerror=null;this.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';" />
   <script>
@@ -53,12 +63,6 @@
 
       loadLeaflet(0)
         .then(function () {
-          return loadScript('./gsi-layers.js');
-        })
-        .then(function () {
-          return loadScript('./export-utils.js');
-        })
-        .then(function () {
           return loadScript('./script.js');
         })
         .catch(function () {
@@ -71,6 +75,7 @@
 </head>
 
 <body>
+<main>
   <section class="hero wrap">
     <p class="hero-kicker">そのままドン突きの三笠公園で</p>
     <h1 class="hero-title">地図で見る街の変化</h1>
@@ -136,7 +141,7 @@
           <span>ピン表示</span>
         </label>
       </div>
-      <select class="map-switcher-select" id="switcher-old">
+      <select class="map-switcher-select" id="switcher-old" aria-label="地図 1 のレイヤーを切り替え">
         <option>地図レイヤーを読み込み中...</option>
       </select>
       <div class="map-shell">
@@ -160,7 +165,7 @@
           <span>ピン表示</span>
         </label>
       </div>
-      <select class="map-switcher-select" id="switcher-new">
+      <select class="map-switcher-select" id="switcher-new" aria-label="地図 2 のレイヤーを切り替え">
         <option>地図レイヤーを読み込み中...</option>
       </select>
       <div class="map-shell">
@@ -213,8 +218,9 @@
       </div>
     </section>
   </details>
+</main>
 
-  <div id="confirm-modal-overlay" class="pin-modal-overlay" aria-hidden="true">
+  <div id="confirm-modal-overlay" class="pin-modal-overlay" aria-hidden="true" inert>
     <div class="pin-modal confirm-modal" role="alertdialog" aria-modal="true"
          aria-labelledby="confirm-modal-title" aria-describedby="confirm-modal-desc">
       <div class="confirm-modal-icon" aria-hidden="true">🗑</div>
@@ -229,7 +235,7 @@
 
   <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="false"></div>
 
-  <div id="pin-modal-overlay" class="pin-modal-overlay" aria-hidden="true">
+  <div id="pin-modal-overlay" class="pin-modal-overlay" aria-hidden="true" inert>
     <div class="pin-modal" role="dialog" aria-modal="true" aria-labelledby="pin-modal-title">
       <h4 id="pin-modal-title" class="pin-modal-title">地点追加</h4>
       <div class="popup-row">
