@@ -82,15 +82,16 @@
     <p class="hero-subtitle">Changes in Town through Maps</p>
     <p class="hero-desc">国土地理院の年代別航空写真と現在の地図を並べて、街の移り変わりを読み解くページです。<br>
       地図をクリックしてピンを追加し、KML形式で保存・共有できます。</p>
-    <p class="hero-note">⚠️古い航空写真は収録されていないエリアが多いです</p>
+    <p class="hero-note">⚠️&nbsp;国土地理院のデータを利用しているため、画像データの欠損があります。</p>
     <div class="section-jump-actions">
-      <button type="button" class="section-jump-btn" data-open-accordion="kml-import-export-section">📁 データ管理</button>
-      <button type="button" class="section-jump-btn" data-open-accordion="story-section">💬 きっかけ</button>
+      <button type="button" class="section-jump-btn" data-open-accordion="kml-import-export-section">📁&nbsp;地点データ</button>
+      <button type="button" class="section-jump-btn" data-open-accordion="data-collection-section">📝&nbsp;情報募集</button>
+      <button type="button" class="section-jump-btn" data-open-accordion="story-section">💬&nbsp;きっかけ</button>
     </div>
   </section>
 
   <details class="card wrap accordion-section" id="kml-import-export-section">
-    <summary class="accordion-summary">データ管理</summary>
+    <summary class="accordion-summary">📂&nbsp;地点データ</summary>
     <div class="accordion-body">
       <h3>プリセットデータ</h3>
       <p>プリセットデータを地図に表示します。</p>
@@ -110,8 +111,11 @@
         <span id="kml-file-name" class="kml-file-name">ファイル未選択</span>
         <button id="btn-load-kml" class="action-btn preset-load-btn" disabled>KML読み込み</button>
       </div>
+      <div class="preset-divider"></div>
       <div id="kml-upload-status" class="preset-status"></div>
-      <p>地図の任意の地点にピンとラベルを追加できます。追加した情報はKML形式でダウンロードできます。</p>
+            <h3>KMLファイル出力</h3>
+
+      <p>地図の任意の地点をクリック・タップするとピンとラベルを追加できます。追加した情報はKML形式でダウンロードできます。</p>
       <div class="export-output-wrap">
         <div class="export-tab-content active" id="export-kml-content">
           <textarea id="kml-output" readonly placeholder="地図をクリックして地点を追加すると、ここにKMLが出力されます"></textarea>
@@ -123,11 +127,10 @@
   </details>
 
   <div class="map-toolbar wrap">
-    <div class="toolbar-left">
+    <div class="toolbar-center">
       <button type="button" id="btn-locate" class="toolbar-btn locate-btn">📍 現在地を表示</button>
       <button type="button" id="btn-purge" class="toolbar-btn purge-btn">🗑 すべてクリア</button>
     </div>
-    <p class="toolbar-hint">二つの地図は連動しています。片方を動かすともう片方も追従します。</p>
   </div>
 
   <section class="maps">
@@ -173,8 +176,16 @@
       </div>
     </section>
   </section>
+    <details class="card wrap accordion-section" id="data-collection-section">
+    <summary class="accordion-summary">📝&nbsp;情報募集</summary>
+    <p style="text-align: center;">
+    あなたが作成した、後世に残したい地点や思い出の地を「データ管理」からダウンロードしたKMLファイルをGitHubリポジトリのIssuesかどこかに投稿してください🤲<br>
+    <a href="https://github.com/halka/Changes-in-Town-through-Maps"><img src="https://socialify.git.ci/halka/Changes-in-Town-through-Maps/image?custom_description=%E5%9C%B0%E5%9B%B3%E3%81%A7%E8%A6%8B%E3%82%8B%E8%A1%97%E3%81%AE%E5%A4%89%E5%8C%96+Changes+in+Town+through+Maps%0A%0A%E9%81%8E%E5%8E%BB%E3%81%A8%E7%8F%BE%E5%9C%A8%E3%81%AE%E5%9C%B0%E5%9B%B3%E3%82%92%E4%B8%A6%E3%81%B9%E3%81%A6%E3%80%81%E8%A1%97%E3%81%AE%E7%A7%BB%E3%82%8A%E5%A4%89%E3%82%8F%E3%82%8A%E3%82%92%E8%AA%AD%E3%81%BF%E8%A7%A3%E3%81%8F%E3%83%97%E3%83%AD%E3%82%B8%E3%82%A7%E3%82%AF%E3%83%88%0A&description=1&font=Inter&issues=1&language=1&logo=https%3A%2F%2Fspacetimap.halka.jp%2Fogp.jpg&name=1&owner=1&pattern=Transparent&pulls=1&stargazers=1&theme=Light" alt="Changes-in-Town-through-Maps" width="80%" height="auto"/></a></p>
+    </p>
+  </details>
+  
   <details class="card wrap accordion-section" id="story-section">
-    <summary class="accordion-summary">きっかけと言うか、与太話。<br>横須賀に行ったときに疑問に思ったので</summary>
+    <summary class="accordion-summary">きっかけと言うか、与太話。横須賀に行ったときに疑問に思ったので</summary>
 
     <section class="chat-section">
       <div class="chat">
