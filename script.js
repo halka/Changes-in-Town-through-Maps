@@ -82,12 +82,13 @@
     return L.circleMarker(latlng, { radius: radius || 7, color: '#dff8ff', weight: 2, fillColor: color, fillOpacity: 1 }).addTo(map);
   }
 
-  function addLabel(map, latlng, text, cls, anchor) {
+  function addLabel(map, latlng, text, cls, anchor, labelColor) {
+    var styleAttr = labelColor ? ` style="color:${labelColor}"` : '';
     return L.marker(latlng, {
       pane: 'labelPane',
       icon: L.divIcon({
         className: 'map-label',
-        html: `<div class="label-box ${cls}">${escapeHtml(text)}</div>`,
+        html: `<div class="label-box ${cls}"${styleAttr}>${escapeHtml(text)}</div>`,
         iconAnchor: anchor || [0, 0]
       }),
       interactive: false,
@@ -959,15 +960,6 @@
           </div>
         </div>
         <div class="popup-row">
-          <label>文字の色</label>
-          <select id="pin-class" class="popup-select">
-            <option value="label-slate" selected>ブルー (Slate)</option>
-            <option value="label-warm">オレンジ (Warm)</option>
-            <option value="label-red">レッド (Red)</option>
-            <option value="label-cool">グリーン (Cool)</option>
-          </select>
-        </div>
-        <div class="popup-row">
           <label>半径 (px)</label>
           <input type="number" id="pin-radius" value="6" min="3" class="popup-input">
         </div>
@@ -995,7 +987,6 @@
 
       const colorPicker = container.querySelector('#pin-color');
       const colorText = container.querySelector('#pin-color-text');
-      const classSelect = container.querySelector('#pin-class');
       const labelInput = container.querySelector('#pin-label');
       const radiusInput = container.querySelector('#pin-radius');
 
@@ -1030,7 +1021,7 @@
         }
 
         const radius = (radiusInput && parseInt(radiusInput.value, 10)) || 6;
-        const cls = (classSelect && classSelect.value) || 'label-slate';
+        const cls = 'label-box';
         const anchor = [0, 16];
 
         const now = new Date();
@@ -1050,9 +1041,9 @@
 
         newPoint.layers = {
           oldCircle: addPoint(oldMap, newPointLatLng, color, radius),
-          oldLabel: addLabel(oldMap, newPointLatLng, label, cls, anchor),
+          oldLabel: addLabel(oldMap, newPointLatLng, label, cls, anchor, color),
           newCircle: addPoint(newMap, newPointLatLng, color, radius),
-          newLabel: addLabel(newMap, newPointLatLng, label, cls, anchor)
+          newLabel: addLabel(newMap, newPointLatLng, label, cls, anchor, color)
         };
 
         bindDeletePopup(newPoint);
