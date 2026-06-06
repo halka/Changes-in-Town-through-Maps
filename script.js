@@ -904,9 +904,19 @@
     document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && overlay.classList.contains('open')) hidePinModal(); });
     if (cancelBtn) cancelBtn.addEventListener('click', hidePinModal);
 
-    // Submit on Enter in label field
+    // Submit on Enter in label field.
+    // Guard against IME composition-confirming Enter on macOS:
+    // compositionend fires before the confirming keydown, so e.isComposing is
+    // already false by that point. Track the state with a flag instead.
     if (labelInput) {
-      labelInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') confirmBtn && confirmBtn.click(); });
+      let imeConfirming = false;
+      labelInput.addEventListener('compositionend', () => {
+        imeConfirming = true;
+        setTimeout(() => { imeConfirming = false; }, 0);
+      });
+      labelInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.isComposing && !imeConfirming) confirmBtn && confirmBtn.click();
+      });
     }
 
     // Sync color pickers ↔ text inputs
