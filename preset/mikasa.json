@@ -1,0 +1,64 @@
+{
+  "title": "横須賀・三笠公園",
+  "description": "横須賀・三笠公園への景色を例に、国土地理院の年代別写真と現在を見比べるデータセット。",
+  "bounds": [
+    [35.2748, 139.6238],
+    [35.3238, 139.6754]
+  ],
+  "points": [
+    {
+      "lat": 35.2846,
+      "lng": 139.6538,
+      "label": "JR横須賀駅",
+      "color": "#f7b267",
+      "radius": 6,
+      "class": "label-slate",
+      "anchor": [0, 16]
+    },
+    {
+      "lat": 35.283136,
+      "lng": 139.657118,
+      "label": "トンネルを抜けて海が見える",
+      "color": "#f7b267",
+      "radius": 6,
+      "class": "label-slate",
+      "anchor": [0, 16]
+    },
+    {
+      "lat": 35.27588,
+      "lng": 139.6374,
+      "label": "横須賀IC（新ルート起点）",
+      "color": "#0ea5c6",
+      "radius": 7,
+      "class": "label-slate",
+      "anchor": [0, 16]
+    },
+    {
+      "lat": 35.282902,
+      "lng": 139.668631,
+      "label": "三笠公園入口 左折",
+      "color": "#0ea5c6",
+      "radius": 6,
+      "class": "label-slate",
+      "anchor": [0, 16]
+    },
+    {
+      "lat": 35.283484,
+      "lng": 139.668610,
+      "label": "直進しないで右に道なりに",
+      "color": "#0ea5c6",
+      "radius": 6,
+      "class": "label-slate",
+      "anchor": [0, 16]
+    },
+    {
+      "lat": 35.285330,
+      "lng": 139.674050,
+      "label": "三笠公園",
+      "color": "#ff8f83",
+      "radius": 8,
+      "class": "label-red",
+      "anchor": [0, 16]
+    }
+  ]
+}

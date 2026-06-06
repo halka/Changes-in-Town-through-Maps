@@ -71,65 +71,69 @@
 </head>
 
 <body>
-  <section class="card wrap">
-    <h1 class="section-title">そのままドン突きの三笠公園で</h1>
-    <h2 style="color: #24434d;">地図で見る街の変化 / Changes in Town through Maps</h2>
-    <p>横須賀・三笠公園への景色を例に、国土地理院の年代別写真と現在を見比べるページです。</p>
-    <p>地図中の任意の地点をクリックすると、その地点にピンが追加可能で、KML形式でエクスポートできます。</p>
-    <strong>古いデータには収録されていないエリアがあります。</strong>
+  <section class="hero wrap">
+    <p class="hero-kicker">そのままドン突きの三笠公園で</p>
+    <h1 class="hero-title">地図で見る街の変化</h1>
+    <p class="hero-subtitle">Changes in Town through Maps</p>
+    <p class="hero-desc">国土地理院の年代別航空写真と現在の地図を並べて、街の移り変わりを読み解くページです。<br>
+      地図をクリックしてピンを追加し、KML形式で保存・共有できます。</p>
+    <p class="hero-note">⚠️古い航空写真は収録されていないエリアが多いです</p>
     <div class="section-jump-actions">
-      <button type="button" class="section-jump-btn"
-        data-open-accordion="kml-import-export-section">データインポート・エクスポート</button>
-              <button type="button" class="section-jump-btn" data-open-accordion="story-section">きっかけ(与太話)</button>
-
+      <button type="button" class="section-jump-btn" data-open-accordion="kml-import-export-section">📁 データ管理</button>
+      <button type="button" class="section-jump-btn" data-open-accordion="story-section">💬 きっかけ</button>
     </div>
   </section>
 
   <details class="card wrap accordion-section" id="kml-import-export-section">
-    <summary class="accordion-summary">データインポート・エクスポート</summary>
+    <summary class="accordion-summary">データ管理</summary>
     <div class="accordion-body">
-      <h3>プリセット読み込み</h3>
-      <p>あらかじめ用意されたプリセットデータを選択して地図に読み込みます。<br>読み込むと、現在表示中のプリセット地点がクリアされ、選択したデータで置き換えられます。</p>
+      <h3>プリセットデータ</h3>
+      <p>プリセットデータを地図に表示します。</p>
       <div class="preset-loader">
         <select id="preset-select" class="preset-select">
-          <option value="">プリセットを読み込み中...</option>
+          <option value="">プリセットデータ読み込み中...</option>
         </select>
         <button id="btn-load-preset" class="action-btn preset-load-btn" disabled>プリセット読み込み</button>
       </div>
       <div id="preset-status" class="preset-status"></div>
       <div class="preset-divider"></div>
       <h3>KMLファイル読み込み</h3>
+      <p>ローカルに保存されたKMLファイルを読み込んで地図に表示します。</p>
       <div class="preset-loader">
         <label for="kml-file-input" class="action-btn kml-upload-label" id="kml-upload-label-btn">KMLファイルを選択</label>
         <input type="file" id="kml-file-input" accept=".kml,application/vnd.google-earth.kml+xml" style="display:none;">
         <span id="kml-file-name" class="kml-file-name">ファイル未選択</span>
-        <button id="btn-load-kml" class="action-btn preset-load-btn" disabled>ローカルデータ読み込み</button>
+        <button id="btn-load-kml" class="action-btn preset-load-btn" disabled>KML読み込み</button>
       </div>
       <div id="kml-upload-status" class="preset-status"></div>
-      <p>地図上（左の空中写真、右の現在地図どちらでも）をクリックすると、その場所にピンとラベルを追加できます。<br>
-        追加された地点のデータがリアルタイムでKML形式で生成されます。Google Earth やその他の GIS ツールで使用できます。
-      </p>
+      <p>地図の任意の地点にピンとラベルを追加できます。追加した情報はKML形式でダウンロードできます。</p>
       <div class="export-output-wrap">
         <div class="export-tab-content active" id="export-kml-content">
           <textarea id="kml-output" readonly placeholder="地図をクリックして地点を追加すると、ここにKMLが出力されます"></textarea>
-          <button id="btn-download-kml" class="action-btn">Export KML</button>
+          <button id="btn-download-kml" class="action-btn">KMLダウンロード</button>
         </div>
       </div>
     </div>
     </div>
   </details>
 
-  <div class="locate-bar wrap">
-    <button type="button" id="btn-locate" class="locate-btn">📍 現在地</button>
-    <button type="button" id="btn-purge" class="locate-btn purge-btn">🗑 ピンをクリア</button>
+  <div class="map-toolbar wrap">
+    <div class="toolbar-left">
+      <button type="button" id="btn-locate" class="toolbar-btn locate-btn">📍 現在地を表示</button>
+      <button type="button" id="btn-purge" class="toolbar-btn purge-btn">🗑 すべてクリア</button>
+    </div>
+    <p class="toolbar-hint">二つの地図は連動しています。片方を動かすともう片方も追従します。</p>
   </div>
-  <section class="maps card-container">
+
+  <section class="maps">
     <section class="map-card">
       <div class="map-head">
-        <div class="tag old">1</div>
+        <div class="map-head-info">
+          <div class="tag old">1</div>
+        </div>
         <label for="toggle-fixed-points-old" class="toggle-label">
           <input type="checkbox" id="toggle-fixed-points-old" checked>
-          <span>データ表示</span>
+          <span>ピン表示</span>
         </label>
       </div>
       <select class="map-switcher-select" id="switcher-old">
@@ -140,12 +144,20 @@
       </div>
     </section>
 
+    <div class="map-divider">
+      <div class="map-divider-line"></div>
+      <span class="map-divider-icon">⇄</span>
+      <div class="map-divider-line"></div>
+    </div>
+
     <section class="map-card">
       <div class="map-head">
-        <div class="tag new">2</div>
+        <div class="map-head-info">
+          <div class="tag new">2</div>
+        </div>
         <label for="toggle-fixed-points-new" class="toggle-label">
           <input type="checkbox" id="toggle-fixed-points-new" checked>
-          <span>データ表示</span>
+          <span>ピン表示</span>
         </label>
       </div>
       <select class="map-switcher-select" id="switcher-new">
@@ -201,6 +213,61 @@
       </div>
     </section>
   </details>
+
+  <div id="confirm-modal-overlay" class="pin-modal-overlay" aria-hidden="true">
+    <div class="pin-modal confirm-modal" role="alertdialog" aria-modal="true"
+         aria-labelledby="confirm-modal-title" aria-describedby="confirm-modal-desc">
+      <div class="confirm-modal-icon" aria-hidden="true">🗑</div>
+      <h4 id="confirm-modal-title" class="pin-modal-title"></h4>
+      <p id="confirm-modal-desc" class="confirm-modal-desc"></p>
+      <div class="popup-actions confirm-modal-actions">
+        <button id="confirm-modal-cancel" class="popup-btn cancel">キャンセル</button>
+        <button id="confirm-modal-ok" class="popup-btn danger"></button>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+  <div id="pin-modal-overlay" class="pin-modal-overlay" aria-hidden="true">
+    <div class="pin-modal" role="dialog" aria-modal="true" aria-labelledby="pin-modal-title">
+      <h4 id="pin-modal-title" class="pin-modal-title">地点追加</h4>
+      <div class="popup-row">
+        <label>緯度経度</label>
+        <input type="text" id="modal-pin-latlng" readonly class="popup-input readonly">
+      </div>
+      <div class="popup-row">
+        <label>ラベル名</label>
+        <input type="text" id="modal-pin-label" placeholder="皇居" class="popup-input">
+      </div>
+      <div class="popup-row">
+        <label>ピンの色</label>
+        <div class="color-picker-group">
+          <input type="color" id="modal-pin-color" value="#0ea5c6" class="popup-color-input">
+          <input type="text" id="modal-pin-color-text" value="#0ea5c6" placeholder="#0ea5c6" class="popup-input" style="font-family: monospace; text-transform: uppercase;">
+        </div>
+      </div>
+      <div class="popup-row">
+        <label>半径 (px)</label>
+        <input type="number" id="modal-pin-radius" value="6" min="3" class="popup-input">
+      </div>
+      <div class="popup-row">
+        <label>文字色</label>
+        <div class="color-picker-group">
+          <input type="color" id="modal-label-color" value="#12313b" class="popup-color-input">
+          <input type="text" id="modal-label-color-text" value="#12313b" placeholder="#12313b" class="popup-input" style="font-family: monospace; text-transform: uppercase;">
+        </div>
+      </div>
+      <div class="popup-row">
+        <label>文字サイズ (px)</label>
+        <input type="number" id="modal-label-font-size" value="14" min="8" max="48" class="popup-input">
+      </div>
+      <div class="popup-actions">
+        <button id="modal-pin-cancel" class="popup-btn cancel">キャンセル</button>
+        <button id="modal-pin-confirm" class="popup-btn primary">追加</button>
+      </div>
+    </div>
+  </div>
 
   <div class="footer">
     <div class="footer-notes">
