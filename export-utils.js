@@ -31,27 +31,7 @@
     };
   }
 
-  function setupExportTabs() {
-    const tabButtons = document.querySelectorAll('.export-tab-btn');
-    const tabContents = document.querySelectorAll('.export-tab-content');
-
-    tabButtons.forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const format = btn.dataset.format;
-        const content = document.getElementById(`export-${format}-content`);
-        if (!content) return;
-
-        tabButtons.forEach((button) => button.classList.remove('active'));
-        tabContents.forEach((tabContent) => tabContent.classList.remove('active'));
-
-        btn.classList.add('active');
-        content.classList.add('active');
-      });
-    });
-  }
-
   window.MikasaExport = {
-    setupDownloadButton,
-    setupExportTabs
+    setupDownloadButton
   };
 })();

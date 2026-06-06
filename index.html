@@ -6,21 +6,21 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>地図で見る街の変化 / 横須賀・三笠公園を例として</title>
   <meta name="description" content="横須賀・三笠公園への景色を例に、国土地理院の年代別写真と現在を見比べるページです。" />
-  <link rel="canonical" href="https://halka.jp/mikasa/" />
-  <meta property="og:site_name" content="halka.jp" />
+  <link rel="canonical" href="https://mikasa.halka.jp/" />
+  <meta property="og:site_name" content="mikasa.halka.jp" />
   <meta property="og:type" content="article" />
   <meta property="og:locale" content="ja_JP" />
-  <meta property="og:url" content="https://halka.jp/mikasa/" />
+  <meta property="og:url" content="https://mikasa.halka.jp/" />
   <meta property="og:description" content="横須賀・三笠公園への景色を例に、国土地理院の年代別写真と現在を見比べるページです。" />
-  <meta property="og:image" content="https://halka.jp/mikasa/ogp.jpg" />
-  <meta property="og:image:secure_url" content="https://halka.jp/mikasa/ogp.jpg" />
+  <meta property="og:image" content="https://mikasa.halka.jp/ogp.jpg" />
+  <meta property="og:image:secure_url" content="https://mikasa.halka.jp/ogp.jpg" />
   <meta property="og:image:type" content="image/jpeg" />
   <meta property="og:image:width" content="1200" />
   <meta property="og:image:height" content="630" />
   <meta property="og:image:alt" content="横須賀市観光案内所の入口" />
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:description" content="横須賀・三笠公園への景色を例に、国土地理院の年代別写真と現在を見比べるページです。" />
-  <meta name="twitter:image" content="https://halka.jp/mikasa/ogp.jpg" />
+  <meta name="twitter:image" content="https://mikasa.halka.jp/ogp.jpg" />
   <meta name="twitter:image:alt" content="横須賀市観光案内所の入口" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
     onerror="this.onerror=null;this.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';" />
@@ -71,20 +71,105 @@
 </head>
 
 <body>
-    <section class="card wrap">
-      <h1 class="section-title">そのままドン突きの三笠公園で</h1>
-      <h2 style="color: #24434d;">地図で見る街の変化 / Changes in Town through Maps</h2>
-    <p>横須賀・三笠公園への景色を例に、国土地理院の年代別写真と現在を見比べるページです。</p>
-      <p>地図中の任意の地点をクリックすると、その地点にピンが追加可能で、JSONとKML形式でエクスポートできます。</p>
-      <strong>古いデータには収録されていないエリアがあります。</strong>
-      <div class="section-jump-actions">
-        <button type="button" class="section-jump-btn" data-open-accordion="story-section">きっかけは横須賀</button>
-        <button type="button" class="section-jump-btn" data-open-accordion="export-section">追加地点エクスポート</button>
-        <button type="button" class="section-jump-btn" data-open-accordion="references-section">参考情報</button>
+  <section class="hero wrap">
+    <p class="hero-kicker">そのままドン突きの三笠公園で</p>
+    <h1 class="hero-title">地図で見る街の変化</h1>
+    <p class="hero-subtitle">Changes in Town through Maps</p>
+    <p class="hero-desc">国土地理院の年代別航空写真と現在の地図を並べて、街の移り変わりを読み解くページです。<br>
+      地図をクリックしてピンを追加し、KML形式で保存・共有できます。</p>
+    <p class="hero-note">⚠️古い航空写真は収録されていないエリアが多いです</p>
+    <div class="section-jump-actions">
+      <button type="button" class="section-jump-btn" data-open-accordion="kml-import-export-section">📁 データ管理</button>
+      <button type="button" class="section-jump-btn" data-open-accordion="story-section">💬 きっかけ</button>
+    </div>
+  </section>
+
+  <details class="card wrap accordion-section" id="kml-import-export-section">
+    <summary class="accordion-summary">データ管理</summary>
+    <div class="accordion-body">
+      <h3>プリセットデータ</h3>
+      <p>プリセットデータを地図に表示します。</p>
+      <div class="preset-loader">
+        <select id="preset-select" class="preset-select">
+          <option value="">プリセットデータ読み込み中...</option>
+        </select>
+        <button id="btn-load-preset" class="action-btn preset-load-btn" disabled>プリセット読み込み</button>
+      </div>
+      <div id="preset-status" class="preset-status"></div>
+      <div class="preset-divider"></div>
+      <h3>KMLファイル読み込み</h3>
+      <p>ローカルに保存されたKMLファイルを読み込んで地図に表示します。</p>
+      <div class="preset-loader">
+        <label for="kml-file-input" class="action-btn kml-upload-label" id="kml-upload-label-btn">KMLファイルを選択</label>
+        <input type="file" id="kml-file-input" accept=".kml,application/vnd.google-earth.kml+xml" style="display:none;">
+        <span id="kml-file-name" class="kml-file-name">ファイル未選択</span>
+        <button id="btn-load-kml" class="action-btn preset-load-btn" disabled>KML読み込み</button>
+      </div>
+      <div id="kml-upload-status" class="preset-status"></div>
+      <p>地図の任意の地点にピンとラベルを追加できます。追加した情報はKML形式でダウンロードできます。</p>
+      <div class="export-output-wrap">
+        <div class="export-tab-content active" id="export-kml-content">
+          <textarea id="kml-output" readonly placeholder="地図をクリックして地点を追加すると、ここにKMLが出力されます"></textarea>
+          <button id="btn-download-kml" class="action-btn">KMLダウンロード</button>
+        </div>
+      </div>
+    </div>
+    </div>
+  </details>
+
+  <div class="map-toolbar wrap">
+    <div class="toolbar-left">
+      <button type="button" id="btn-locate" class="toolbar-btn locate-btn">📍 現在地を表示</button>
+      <button type="button" id="btn-purge" class="toolbar-btn purge-btn">🗑 すべてクリア</button>
+    </div>
+    <p class="toolbar-hint">二つの地図は連動しています。片方を動かすともう片方も追従します。</p>
+  </div>
+
+  <section class="maps">
+    <section class="map-card">
+      <div class="map-head">
+        <div class="map-head-info">
+          <div class="tag old">1</div>
+        </div>
+        <label for="toggle-fixed-points-old" class="toggle-label">
+          <input type="checkbox" id="toggle-fixed-points-old" checked>
+          <span>ピン表示</span>
+        </label>
+      </div>
+      <select class="map-switcher-select" id="switcher-old">
+        <option>地図レイヤーを読み込み中...</option>
+      </select>
+      <div class="map-shell">
+        <div id="map-old" class="map-el"></div>
       </div>
     </section>
-      <details class="card wrap accordion-section" id="story-section">
-    <summary class="accordion-summary">きっかけ<br>横須賀に行ったときに疑問に思ったので</summary>
+
+    <div class="map-divider">
+      <div class="map-divider-line"></div>
+      <span class="map-divider-icon">⇄</span>
+      <div class="map-divider-line"></div>
+    </div>
+
+    <section class="map-card">
+      <div class="map-head">
+        <div class="map-head-info">
+          <div class="tag new">2</div>
+        </div>
+        <label for="toggle-fixed-points-new" class="toggle-label">
+          <input type="checkbox" id="toggle-fixed-points-new" checked>
+          <span>ピン表示</span>
+        </label>
+      </div>
+      <select class="map-switcher-select" id="switcher-new">
+        <option>地図レイヤーを読み込み中...</option>
+      </select>
+      <div class="map-shell">
+        <div id="map-new" class="map-el"></div>
+      </div>
+    </section>
+  </section>
+  <details class="card wrap accordion-section" id="story-section">
+    <summary class="accordion-summary">きっかけと言うか、与太話。<br>横須賀に行ったときに疑問に思ったので</summary>
 
     <section class="chat-section">
       <div class="chat">
@@ -109,8 +194,8 @@
           <div class="avatar user">halka</div>
           <div class="bubble">クレイジーケンバンドの「タイガー＆ドラゴン」って知ってる？
             <div class="video-wrap">
-              <iframe src="https://www.youtube-nocookie.com/embed/YIl0jOxgD_E" title="クレイジーケンバンド タイガー＆ドラゴン" loading="lazy"
-                referrerpolicy="strict-origin-when-cross-origin"
+              <iframe src="https://www.youtube-nocookie.com/embed/YIl0jOxgD_E" title="クレイジーケンバンド タイガー＆ドラゴン"
+                loading="lazy" referrerpolicy="strict-origin-when-cross-origin"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                 allowfullscreen></iframe>
             </div>
@@ -129,151 +214,66 @@
     </section>
   </details>
 
-    <section class="maps card-container">
-      <section class="map-card">
-        <div class="map-head">
-          <div class="tag old">1</div>
-          <label for="toggle-fixed-points-old" class="toggle-label">
-            <input type="checkbox" id="toggle-fixed-points-old" checked>
-            <span>プリセット地点を表示</span>
-          </label>
-        </div>
-        <select class="map-switcher-select" id="switcher-old">
-          <option>地図レイヤーを読み込み中...</option>
-        </select>
-        <div class="map-shell">
-          <div id="map-old" class="map-el"></div>
-        </div>
-      </section>
-
-      <section class="map-card">
-        <div class="map-head">
-          <div class="tag new">2</div>
-          <label for="toggle-fixed-points-new" class="toggle-label">
-            <input type="checkbox" id="toggle-fixed-points-new" checked>
-            <span>プリセット地点を表示</span>
-          </label>
-        </div>
-        <select class="map-switcher-select" id="switcher-new">
-          <option>地図レイヤーを読み込み中...</option>
-        </select>
-        <div class="map-shell">
-          <div id="map-new" class="map-el"></div>
-        </div>
-      </section>
-    </section>
-    <details class="card location-tool wrap accordion-section" id="export-section">
-      <summary class="accordion-summary">追加地点エクスポート</summary>
-      <div class="accordion-body">
-      <p>地図上（左の空中写真、右の現在地図どちらでも）をクリックすると、その場所にピンとラベルを追加できます。<br>
-        追加された地点のデータがリアルタイムでJSON/KML形式で生成されます。
-      </p>
-      <div class="export-tabs">
-        <button class="export-tab-btn active" data-format="json">JSON</button>
-        <button class="export-tab-btn" data-format="kml">KML</button>
+  <div id="confirm-modal-overlay" class="pin-modal-overlay" aria-hidden="true">
+    <div class="pin-modal confirm-modal" role="alertdialog" aria-modal="true"
+         aria-labelledby="confirm-modal-title" aria-describedby="confirm-modal-desc">
+      <div class="confirm-modal-icon" aria-hidden="true">🗑</div>
+      <h4 id="confirm-modal-title" class="pin-modal-title"></h4>
+      <p id="confirm-modal-desc" class="confirm-modal-desc"></p>
+      <div class="popup-actions confirm-modal-actions">
+        <button id="confirm-modal-cancel" class="popup-btn cancel">キャンセル</button>
+        <button id="confirm-modal-ok" class="popup-btn danger"></button>
       </div>
-      <div class="export-output-wrap">
-        <div class="export-tab-content active" id="export-json-content">
-          <p style="color: #6a838d; font-size: 0.85rem; margin-top: 0;">ダウンロードしてプリセットの地点データに追加できます。</p>
-          <textarea id="json-output" readonly placeholder="地図をクリックして地点を追加すると、ここにJSONが出力されます"></textarea>
-          <button id="btn-download-json" class="action-btn">Download JSON</button>
-        </div>
-        <div class="export-tab-content" id="export-kml-content">
-          <p style="color: #6a838d; font-size: 0.85rem; margin-top: 0;">Google Earth やその他の GIS ツールで使用できます。</p>
-          <textarea id="kml-output" readonly placeholder="地図をクリックして地点を追加すると、ここにKMLが出力されます"></textarea>
-          <button id="btn-download-kml" class="action-btn">Download KML</button>
-        </div>
-      </div>
-      </div>
-    </details>
-  </div>
-  <details class="card wrap accordion-section" id="references-section">
-    <summary class="accordion-summary">参考情報</summary>
-    <div class="accordion-body">
-    <table class="card-table">
-      <tbody>
-        <tr>
-          <th>三笠公園への現行アクセス</th>
-          <td>
-            <a href="https://www.kanagawaparks.com/mikasa/access.html" target="_blank" rel="noopener noreferrer">三笠公園
-              交通アクセス（指定管理者）</a> 
-            <a href="https://www.cocoyoko.net/spot/mikasa-park.html" target="_blank" rel="noopener noreferrer">YOKOSUKA
-              PORT MARKET 観光情報・三笠公園</a>
-            <div class="small">いずれも「横須賀IC → 本町山中道路 → 国道16号 → 三笠公園入口左折 → 突き当たり右折」と案内。</div>
-          </td>
-        </tr>
-        <tr>
-          <th>記念艦三笠の自動車アクセス</th>
-          <td>
-            <a href="https://www.city.yokosuka.kanagawa.jp/2150/sisetu/fc00000651.html" target="_blank"
-              rel="noopener noreferrer">横須賀市「世界三大記念艦 三笠」</a>
-            <div class="small">横須賀IC → 本町山中道路 → R16 約3分という案内の確認用。</div>
-          </td>
-        </tr>
-        <tr>
-          <th>本町山中道路の現況</th>
-          <td>
-            <a href="https://www.kdt-kousha.or.jp/road/road_honcho/" target="_blank" rel="noopener noreferrer">神奈川県道路公社
-              本町山中有料道路</a>
-            <div class="small">2022年3月21日から無料開放となり神奈川県管理と明記。</div>
-          </td>
-        </tr>
-        <tr>
-          <th>本町山中道路の開通年・延長</th>
-          <td>
-            <a href="https://travel.watch.impress.co.jp/docs/news/1335971.html" target="_blank"
-              rel="noopener noreferrer">Travel Watch 本町山中有料道路無料開放記事</a>
-            <div class="small">1992年3月21日開通、横須賀市汐入町〜山中町の約2.6km。</div>
-          </td>
-        </tr>
-        <tr>
-          <th>国道16号・横須賀側のトンネル性格</th>
-          <td>
-            <a href="https://www.ktr.mlit.go.jp/yokohama/yokokoku_index033.html" target="_blank"
-              rel="noopener noreferrer">横浜国道事務所「一般国道16号」</a> ／
-            <a href="https://www.ktr.mlit.go.jp/yokohama/yokokoku_index034.html" target="_blank"
-              rel="noopener noreferrer">横浜国道事務所「横須賀地区トンネル改修」</a>
-            <div class="small">横須賀区間にトンネルが集中し、老朽化対策の対象になっていることの根拠。</div>
-          </td>
-        </tr>
-        <tr>
-          <th>田浦トンネルの個別参考</th>
-          <td>
-            <a href="https://www.city.yokosuka.kanagawa.jp/2744/walk_taura/b10039.html" target="_blank"
-              rel="noopener noreferrer">横須賀市「16号線・田浦トンネル」</a>
-            <div class="small">国道16号線のトンネル群と田浦周辺の雰囲気確認用。旧ルート表現の参考。</div>
-          </td>
-        </tr>
-        <tr>
-          <th>地点座標リンク（国土地理院）</th>
-          <td>
-            <a href="https://maps.gsi.go.jp/#15/35.285854/139.673952/" target="_blank"
-              rel="noopener noreferrer">三笠公園</a> ／
-            <a href="https://maps.gsi.go.jp/#17/35.282902/139.668631/" target="_blank"
-              rel="noopener noreferrer">三笠公園入口交差点</a> ／
-            <a href="https://maps.gsi.go.jp/#15/35.275880/139.637400/" target="_blank"
-              rel="noopener noreferrer">横須賀IC</a> ／
-            <a href="https://maps.gsi.go.jp/#16/35.283009/139.658683/" target="_blank" rel="noopener noreferrer">本町出入口
-              付近</a> ／
-            <a href="https://maps.gsi.go.jp/#15/35.317200/139.624600/" target="_blank" rel="noopener noreferrer">追浜
-              付近</a> ／
-            <a href="https://maps.gsi.go.jp/#15/35.296700/139.638800/" target="_blank" rel="noopener noreferrer">田浦
-              付近</a> 
-            <a href="https://maps.gsi.go.jp/#16/35.284600/139.653800/" target="_blank" rel="noopener noreferrer">横須賀駅
-              付近</a>
-            <div class="small">主要点の確認用。地図上には線を引かず、地点とラベルのみを表示しています。</div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
     </div>
-  </details>
+  </div>
+
+  <div id="toast-container" class="toast-container" aria-live="polite" aria-atomic="false"></div>
+
+  <div id="pin-modal-overlay" class="pin-modal-overlay" aria-hidden="true">
+    <div class="pin-modal" role="dialog" aria-modal="true" aria-labelledby="pin-modal-title">
+      <h4 id="pin-modal-title" class="pin-modal-title">地点追加</h4>
+      <div class="popup-row">
+        <label>緯度経度</label>
+        <input type="text" id="modal-pin-latlng" readonly class="popup-input readonly">
+      </div>
+      <div class="popup-row">
+        <label>ラベル名</label>
+        <input type="text" id="modal-pin-label" placeholder="皇居" class="popup-input">
+      </div>
+      <div class="popup-row">
+        <label>ピンの色</label>
+        <div class="color-picker-group">
+          <input type="color" id="modal-pin-color" value="#0ea5c6" class="popup-color-input">
+          <input type="text" id="modal-pin-color-text" value="#0ea5c6" placeholder="#0ea5c6" class="popup-input" style="font-family: monospace; text-transform: uppercase;">
+        </div>
+      </div>
+      <div class="popup-row">
+        <label>半径 (px)</label>
+        <input type="number" id="modal-pin-radius" value="6" min="3" class="popup-input">
+      </div>
+      <div class="popup-row">
+        <label>文字色</label>
+        <div class="color-picker-group">
+          <input type="color" id="modal-label-color" value="#12313b" class="popup-color-input">
+          <input type="text" id="modal-label-color-text" value="#12313b" placeholder="#12313b" class="popup-input" style="font-family: monospace; text-transform: uppercase;">
+        </div>
+      </div>
+      <div class="popup-row">
+        <label>文字サイズ (px)</label>
+        <input type="number" id="modal-label-font-size" value="14" min="8" max="48" class="popup-input">
+      </div>
+      <div class="popup-actions">
+        <button id="modal-pin-cancel" class="popup-btn cancel">キャンセル</button>
+        <button id="modal-pin-confirm" class="popup-btn primary">追加</button>
+      </div>
+    </div>
+  </div>
 
   <div class="footer">
     <div class="footer-notes">
       <div class="footer-note">
-        出典: 国土地理院 <a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank" rel="noopener noreferrer">地理院タイル一覧ページ</a><br>
-        地点表示は、公式アクセス案内・道路情報・主要地点座標リンクをもとにページ制作用に配置したものです。
+        出典: 国土地理院 <a href="https://maps.gsi.go.jp/development/ichiran.html" target="_blank"
+          rel="noopener noreferrer">地理院タイル一覧ページ</a>
       </div>
     </div>
     <div class="footer-copyright">
@@ -281,4 +281,5 @@
     </div>
   </div>
 </body>
+
 </html>
