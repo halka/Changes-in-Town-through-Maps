@@ -890,17 +890,20 @@
 
 .locate-bar {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   margin-bottom: -18px;
   padding: 0;
 }
 
 .locate-btn {
+    width: 30vw;
+    height: 10vh;
+
   background: #fff;
   border: 1px solid #a7c4cf;
   border-radius: 6px;
   padding: 8px 14px;
-  font-size: 13px;
+  font-size: 2em;
   font-weight: 600;
   color: #15323b;
   cursor: pointer;
@@ -911,6 +914,16 @@
 .locate-btn:hover {
   background: #f2fbff;
   border-color: #0ea5c6;
+}
+
+.purge-btn {
+  color: #8b4a11;
+  border-color: #d9a76a;
+}
+
+.purge-btn:hover {
+  background: #fff8f0;
+  border-color: var(--warm-strong);
 }
 
 /* Preset Loader */

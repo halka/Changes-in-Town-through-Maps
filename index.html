@@ -78,13 +78,86 @@
     <p>地図中の任意の地点をクリックすると、その地点にピンが追加可能で、KML形式でエクスポートできます。</p>
     <strong>古いデータには収録されていないエリアがあります。</strong>
     <div class="section-jump-actions">
-      <button type="button" class="section-jump-btn" data-open-accordion="story-section">きっかけは横須賀</button>
       <button type="button" class="section-jump-btn"
         data-open-accordion="kml-import-export-section">データインポート・エクスポート</button>
+              <button type="button" class="section-jump-btn" data-open-accordion="story-section">きっかけ(与太話)</button>
+
     </div>
   </section>
+
+  <details class="card wrap accordion-section" id="kml-import-export-section">
+    <summary class="accordion-summary">データインポート・エクスポート</summary>
+    <div class="accordion-body">
+      <h3>プリセット読み込み</h3>
+      <p>あらかじめ用意されたプリセットデータを選択して地図に読み込みます。<br>読み込むと、現在表示中のプリセット地点がクリアされ、選択したデータで置き換えられます。</p>
+      <div class="preset-loader">
+        <select id="preset-select" class="preset-select">
+          <option value="">プリセットを読み込み中...</option>
+        </select>
+        <button id="btn-load-preset" class="action-btn preset-load-btn" disabled>プリセット読み込み</button>
+      </div>
+      <div id="preset-status" class="preset-status"></div>
+      <div class="preset-divider"></div>
+      <h3>KMLファイル読み込み</h3>
+      <div class="preset-loader">
+        <label for="kml-file-input" class="action-btn kml-upload-label" id="kml-upload-label-btn">KMLファイルを選択</label>
+        <input type="file" id="kml-file-input" accept=".kml,application/vnd.google-earth.kml+xml" style="display:none;">
+        <span id="kml-file-name" class="kml-file-name">ファイル未選択</span>
+        <button id="btn-load-kml" class="action-btn preset-load-btn" disabled>ローカルデータ読み込み</button>
+      </div>
+      <div id="kml-upload-status" class="preset-status"></div>
+      <p>地図上（左の空中写真、右の現在地図どちらでも）をクリックすると、その場所にピンとラベルを追加できます。<br>
+        追加された地点のデータがリアルタイムでKML形式で生成されます。Google Earth やその他の GIS ツールで使用できます。
+      </p>
+      <div class="export-output-wrap">
+        <div class="export-tab-content active" id="export-kml-content">
+          <textarea id="kml-output" readonly placeholder="地図をクリックして地点を追加すると、ここにKMLが出力されます"></textarea>
+          <button id="btn-download-kml" class="action-btn">Export KML</button>
+        </div>
+      </div>
+    </div>
+    </div>
+  </details>
+
+  <div class="locate-bar wrap">
+    <button type="button" id="btn-locate" class="locate-btn">📍 現在地</button>
+    <button type="button" id="btn-purge" class="locate-btn purge-btn">🗑 ピンをクリア</button>
+  </div>
+  <section class="maps card-container">
+    <section class="map-card">
+      <div class="map-head">
+        <div class="tag old">1</div>
+        <label for="toggle-fixed-points-old" class="toggle-label">
+          <input type="checkbox" id="toggle-fixed-points-old" checked>
+          <span>データ表示</span>
+        </label>
+      </div>
+      <select class="map-switcher-select" id="switcher-old">
+        <option>地図レイヤーを読み込み中...</option>
+      </select>
+      <div class="map-shell">
+        <div id="map-old" class="map-el"></div>
+      </div>
+    </section>
+
+    <section class="map-card">
+      <div class="map-head">
+        <div class="tag new">2</div>
+        <label for="toggle-fixed-points-new" class="toggle-label">
+          <input type="checkbox" id="toggle-fixed-points-new" checked>
+          <span>データ表示</span>
+        </label>
+      </div>
+      <select class="map-switcher-select" id="switcher-new">
+        <option>地図レイヤーを読み込み中...</option>
+      </select>
+      <div class="map-shell">
+        <div id="map-new" class="map-el"></div>
+      </div>
+    </section>
+  </section>
   <details class="card wrap accordion-section" id="story-section">
-    <summary class="accordion-summary">きっかけ<br>横須賀に行ったときに疑問に思ったので</summary>
+    <summary class="accordion-summary">きっかけと言うか、与太話。<br>横須賀に行ったときに疑問に思ったので</summary>
 
     <section class="chat-section">
       <div class="chat">
@@ -129,75 +202,6 @@
     </section>
   </details>
 
-  <details class="card wrap accordion-section" id="kml-import-export-section">
-    <summary class="accordion-summary">データインポート・エクスポート</summary>
-    <div class="accordion-body">
-      <p>あらかじめ用意されたプリセットデータを選択して地図に読み込みます。<br>読み込むと、現在表示中のプリセット地点がクリアされ、選択したデータで置き換えられます。</p>
-      <div class="preset-loader">
-        <select id="preset-select" class="preset-select">
-          <option value="">プリセットを読み込み中...</option>
-        </select>
-        <button id="btn-load-preset" class="action-btn preset-load-btn" disabled>プリセット読み込み</button>
-      </div>
-      <div id="preset-status" class="preset-status"></div>
-      <div class="preset-divider"></div>
-      <p>ローカルからKMLファイル読み込む</p>
-      <div class="preset-loader">
-        <label for="kml-file-input" class="action-btn kml-upload-label" id="kml-upload-label-btn">KMLファイルを選択</label>
-        <input type="file" id="kml-file-input" accept=".kml,application/vnd.google-earth.kml+xml" style="display:none;">
-        <span id="kml-file-name" class="kml-file-name">ファイル未選択</span>
-        <button id="btn-load-kml" class="action-btn preset-load-btn" disabled>ローカルデータ読み込み</button>
-      </div>
-      <div id="kml-upload-status" class="preset-status"></div>
-      <p>地図上（左の空中写真、右の現在地図どちらでも）をクリックすると、その場所にピンとラベルを追加できます。<br>
-        追加された地点のデータがリアルタイムでKML形式で生成されます。Google Earth やその他の GIS ツールで使用できます。
-      </p>
-      <div class="export-output-wrap">
-        <div class="export-tab-content active" id="export-kml-content">
-          <textarea id="kml-output" readonly placeholder="地図をクリックして地点を追加すると、ここにKMLが出力されます"></textarea>
-          <button id="btn-download-kml" class="action-btn">Export KML</button>
-        </div>
-      </div>
-    </div>
-    </div>
-  </details>
-
-  <div class="locate-bar wrap">
-    <button type="button" id="btn-locate" class="locate-btn">📍 現在地にピン</button>
-  </div>
-  <section class="maps card-container">
-    <section class="map-card">
-      <div class="map-head">
-        <div class="tag old">1</div>
-        <label for="toggle-fixed-points-old" class="toggle-label">
-          <input type="checkbox" id="toggle-fixed-points-old" checked>
-          <span>プリセット地点を表示</span>
-        </label>
-      </div>
-      <select class="map-switcher-select" id="switcher-old">
-        <option>地図レイヤーを読み込み中...</option>
-      </select>
-      <div class="map-shell">
-        <div id="map-old" class="map-el"></div>
-      </div>
-    </section>
-
-    <section class="map-card">
-      <div class="map-head">
-        <div class="tag new">2</div>
-        <label for="toggle-fixed-points-new" class="toggle-label">
-          <input type="checkbox" id="toggle-fixed-points-new" checked>
-          <span>プリセット地点を表示</span>
-        </label>
-      </div>
-      <select class="map-switcher-select" id="switcher-new">
-        <option>地図レイヤーを読み込み中...</option>
-      </select>
-      <div class="map-shell">
-        <div id="map-new" class="map-el"></div>
-      </div>
-    </section>
-  </section>
   <div class="footer">
     <div class="footer-notes">
       <div class="footer-note">

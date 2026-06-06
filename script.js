@@ -271,14 +271,47 @@
   L.control.zoom({ position: 'bottomright' }).addTo(oldMap);
   L.control.zoom({ position: 'bottomright' }).addTo(newMap);
 
+  const locationPins = [];
+
   function addCurrentLocationPin(latlng) {
     const point = { latlng: [latlng.lat, latlng.lng], label: '現在地', class: 'label-cool', anchor: [0, 16] };
     [oldMap, newMap].forEach((map) => {
-      addPoint(map, point.latlng, '#22c55e', 7);
-      addLabel(map, point.latlng, point.label, point.class, point.anchor);
+      locationPins.push(addPoint(map, point.latlng, '#22c55e', 7));
+      locationPins.push(addLabel(map, point.latlng, point.label, point.class, point.anchor));
     });
     oldMap.setView(latlng, Math.max(oldMap.getZoom(), 15), { animate: true });
     newMap.setView(latlng, Math.max(newMap.getZoom(), 15), { animate: true });
+  }
+
+  function clearLocationPins() {
+    locationPins.forEach((layer) => layer.remove());
+    locationPins.length = 0;
+  }
+
+  function clearCustomPoints() {
+    while (customPoints.length > 0) {
+      deleteCustomPoint(customPoints[0]);
+    }
+  }
+
+  function resetLayerSwitchers() {
+    var initialOld = getInitialLayerKey('old');
+    var initialNew = getInitialLayerKey('new');
+    setMapLayer(oldMap, oldLayers, 'old', initialOld);
+    setMapLayer(newMap, newLayers, 'new', initialNew);
+    var oldSel = document.getElementById('switcher-old');
+    var newSel = document.getElementById('switcher-new');
+    if (oldSel) oldSel.value = initialOld;
+    if (newSel) newSel.value = initialNew;
+  }
+
+  function purgeAllPins() {
+    clearFixedPoints();
+    clearCustomPoints();
+    clearLocationPins();
+    updateKmlOutput();
+    resetLayerSwitchers();
+    setDefaultView();
   }
 
   (function setupLocateButton() {
@@ -299,6 +332,12 @@
         alert('現在地を取得できませんでした: ' + err.message);
       }, { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 });
     });
+  })();
+
+  (function setupPurgeButton() {
+    const btn = document.getElementById('btn-purge');
+    if (!btn) return;
+    btn.addEventListener('click', purgeAllPins);
   })();
 
   const fixedPoints = { old: [], new: [] };
