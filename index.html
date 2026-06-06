@@ -22,6 +22,15 @@
   <meta name="twitter:description" content="地図を見比べて過去と現在を見比べ、街の移り変わりを読み解くページです。" />
   <meta name="twitter:image" content="https://spacetimap.halka.jp/ogp.jpg" />
   <meta name="twitter:image:alt" content="横須賀市観光案内所" />
+  <!-- Resource hints -->
+  <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+  <link rel="preconnect" href="https://unpkg.com" crossorigin>
+  <link rel="dns-prefetch" href="https://maps.gsi.go.jp">
+  <link rel="dns-prefetch" href="https://tile.openstreetmap.org">
+  <link rel="dns-prefetch" href="https://basemaps.cartocdn.com">
+  <link rel="dns-prefetch" href="https://tile.opentopomap.org">
+  <!-- Preload Leaflet CSS so the browser fetches it before the parser reaches the stylesheet link -->
+  <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" as="style">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css"
     onerror="this.onerror=null;this.href='https://unpkg.com/leaflet@1.9.4/dist/leaflet.css';" />
   <script>
@@ -52,12 +61,6 @@
       }
 
       loadLeaflet(0)
-        .then(function () {
-          return loadScript('./gsi-layers.js');
-        })
-        .then(function () {
-          return loadScript('./export-utils.js');
-        })
         .then(function () {
           return loadScript('./script.js');
         })
