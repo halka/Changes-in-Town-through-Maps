@@ -3,7 +3,8 @@
 
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="theme-color" content="#eef7f9">
   <title>地図で見る街の変化</title>
   <meta name="description" content="地図を見比べて過去と現在を見比べ、街の移り変わりを読み解くページです。" />
   <link rel="canonical" href="https://spacetimap.halka.jp/" />
@@ -113,7 +114,7 @@
       </div>
       <div class="preset-divider"></div>
       <div id="kml-upload-status" class="preset-status"></div>
-            <h3>KMLファイル出力</h3>
+            <h3>KMLダウンロード</h3>
 
       <p>地図の任意の地点をクリック・タップするとピンとラベルを追加できます。追加した情報はKML形式でダウンロードできます。</p>
       <div class="export-output-wrap">
@@ -128,8 +129,8 @@
 
   <div class="map-toolbar wrap">
     <div class="toolbar-center">
-      <button type="button" id="btn-locate" class="toolbar-btn locate-btn">📍 現在地を表示</button>
-      <button type="button" id="btn-purge" class="toolbar-btn purge-btn">🗑 すべてクリア</button>
+      <button type="button" id="btn-locate" class="toolbar-btn locate-btn">📍&nbsp;現在地を表示</button>
+      <button type="button" id="btn-purge" class="toolbar-btn purge-btn">🗑&nbsp;すべてクリア</button>
     </div>
   </div>
 
@@ -141,7 +142,7 @@
         </div>
         <label for="toggle-fixed-points-old" class="toggle-label">
           <input type="checkbox" id="toggle-fixed-points-old" checked>
-          <span>ピン表示</span>
+          <span>地点データ表示</span>
         </label>
       </div>
       <select class="map-switcher-select" id="switcher-old" aria-label="地図 1 のレイヤーを切り替え">
@@ -165,7 +166,7 @@
         </div>
         <label for="toggle-fixed-points-new" class="toggle-label">
           <input type="checkbox" id="toggle-fixed-points-new" checked>
-          <span>ピン表示</span>
+          <span>地点データ表示</span>
         </label>
       </div>
       <select class="map-switcher-select" id="switcher-new" aria-label="地図 2 のレイヤーを切り替え">
